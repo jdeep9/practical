@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 class Hobby extends Model
 {
     protected $fillable = [
-        'user_id','name'
+        'name'
     ];
 
     /**
@@ -19,8 +19,13 @@ class Hobby extends Model
         return $this->belongsToMany(User::class);
     }
 
+    public function getHobbyId($data){
+        return $this->where('name', $data['hobby_name'])->first();
+    }
+
     public function getUserListByHobby($data) {
-        $hobbies = $this->where('name', $data['hobby_name'])->first();
+
+        $hobbies = $this->getHobbyId($data);
 
         return $this->find($hobbies->id)->user;
     }
