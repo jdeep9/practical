@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Hobby;
+use App\HobbyUser;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UserUpdateRequest;
@@ -18,15 +19,17 @@ class AuthController extends Controller
     const ITEM_PER_PAGE = 10;
     public $user;
     public $hobby;
+    public $hobby_user;
     /**
      * Create a new AuthController instance.
      *
      * @return void
      */
-    public function __construct(User $user, Hobby $hobby)
+    public function __construct(User $user, Hobby $hobby, HobbyUser $hobby_user)
     {
         $this->user = $user;
         $this->hobby = $hobby;
+        $this->hobby_user = $hobby_user;
         $this->middleware('auth:api', ['except' => ['login']]);
     }
 
@@ -142,14 +145,14 @@ class AuthController extends Controller
 
             $userId = auth()->user()->id;
 
-            $hobby = Hobby::create([
-                'user_id'  => $userId,
-                'name' => $data['hobby_name']
-            ]);
 
-            if(!empty($hobby)){
+            $hobbies = $this->hobby->getHobbyId($data);
+
+            $hobbyUser = $this->hobby_user->addHobbyToUser($userId, $hobbies->id);
+
+            if(!empty($hobbyUser)){
                 DB::commit();
-                return response()->json(['status_code' => $status_code, 'message' => $message, 'data' => $hobby]);
+                return response()->json(['status_code' => $status_code, 'message' => $message, 'data' => $hobbyUser]);
             }else{
                 return response()->json(['status_code' => 400, 'message' => 'failed']);
             }
